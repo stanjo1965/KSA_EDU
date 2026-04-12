@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>설문 응답 관리</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: #f0f2f8;
+      min-height: 100vh;
+    }
+
+    /* ── 헤더 ── */
+    .topbar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(102,126,234,0.3);
+    }
+    .topbar h1 { color: white; font-size: 18px; font-weight: 700; }
+    .topbar-right { display: flex; gap: 10px; }
+
+    .btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-white {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+    .btn-white:hover { background: rgba(255,255,255,0.3); }
+    .btn-green { background: #10b981; color: white; }
+    .btn-green:hover { background: #059669; }
+
+    /* ── 본문 ── */
+    .main { padding: 28px 32px; }
+
+    /* ── 통계 카드 ── */
+    .stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px 24px;
+      flex: 1;
+      min-width: 140px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .stat-card .label { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; color: #1a1a2e; }
+    .stat-card .sub { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+    /* ── 검색/필터 바 ── */
+    .toolbar {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      padding: 9px 14px 9px 36px;
+      border: 2px solid #e8e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+      background: #fafafa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E") no-repeat 12px center;
+      transition: border-color 0.2s;
+    }
+    .search-box:focus { border-color: #667eea; background-color: white; }
+
+    .filter-select {
+      padding: 9px 14px;
+      border: 2px solid #e8e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+      background: #fafafa;
+      cursor: pointer;
+    }
+    .filter-select:focus { border-color: #667eea; }
+
+    /* ── 테이블 ── */
+    .table-wrap {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .table-scroll { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    thead tr { background: #f7f8fc; }
+    thead th {
+      padding: 13px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #eee;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    thead th:hover { color: #667eea; }
+    thead th .sort-icon { margin-left: 4px; opacity: 0.4; }
+    thead th.sorted .sort-icon { opacity: 1; color: #667eea; }
+
+    tbody tr {
+      border-bottom: 1px solid #f0f0f8;
+      transition: background 0.1s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafbff; }
+
+    td {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: #333;
+      vertical-align: top;
+    }
+    td .primary { font-weight: 600; color: #1a1a2e; }
+    td .secondary { font-size: 12px; color: #888; margin-top: 2px; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 600;
+      margin: 2px 2px 2px 0;
+    }
+    .badge-blue { background: #eff0ff; color: #667eea; }
+    .badge-green { background: #ecfdf5; color: #10b981; }
+    .badge-purple { background: #fdf4ff; color: #a855f7; }
+    .badge-gray { background: #f3f4f6; color: #6b7280; }
+
+    .cell-wrap { max-width: 220px; }
+    .cell-wrap p { white-space: normal; line-height: 1.5; font-size: 13px; color: #555; }
+
+    .no-data {
+      text-align: center;
+      padding: 60px 20px;
+      color: #aaa;
+    }
+    .no-data .icon { font-size: 40px; margin-bottom: 12px; }
+
+    /* ── 페이지네이션 ── */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #f0f0f8;
+    }
+    .page-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 2px solid #e8e8f0;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      color: #555;
+      transition: all 0.15s;
+    }
+    .page-btn:hover { border-color: #667eea; color: #667eea; }
+    .page-btn.active { background: #667eea; border-color: #667eea; color: white; }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* ── 모달 ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 560px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal h2 { font-size: 18px; color: #1a1a2e; margin-bottom: 20px; }
+    .modal-row { margin-bottom: 16px; }
+    .modal-row .mLabel { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .modal-row .mValue { font-size: 15px; color: #333; line-height: 1.6; }
+    .modal-close {
+      width: 100%;
+      margin-top: 24px;
+      padding: 12px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    @media (max-width: 600px) {
+      .main { padding: 16px; }
+      .topbar { padding: 0 16px; }
+      .stats { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>📋 설문 응답 관리</h1>
+  <div class="topbar-right">
+    <a href="/" class="btn btn-white">+ 설문 폼</a>
+    <button class="btn btn-green" onclick="exportCSV()">⬇ CSV 내보내기</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- 통계 -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">총 응답수</div>
+      <div class="value" id="statTotal">-</div>
+      <div class="sub">전체 제출</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">ChatGPT 사용</div>
+      <div class="value" id="statChatGPT">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Claude 사용</div>
+      <div class="value" id="statClaude">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Gemini 사용</div>
+      <div class="value" id="statGemini">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">AI 미사용</div>
+      <div class="value" id="statNone">-</div>
+    </div>
+  </div>
+
+  <!-- 검색 -->
+  <div class="toolbar">
+    <input type="text" class="search-box" id="searchInput" placeholder="이름, 소속사, 연락처 검색...">
+    <select class="filter-select" id="aiFilter">
+      <option value="">AI 솔루션 전체</option>
+      <option value="ChatGPT">ChatGPT</option>
+      <option value="Claude">Claude</option>
+      <option value="Gemini">Gemini</option>
+      <option value="미사용">미사용</option>
+    </select>
+    <button class="btn btn-white" style="background:#667eea;color:white;border:none;" onclick="loadData()">새로고침</button>
+  </div>
+
+  <!-- 테이블 -->
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('id')">#<span class="sort-icon">↕</span></th>
+            <th onclick="sortBy('company')">소속사<span class="sort-icon">↕</span></th>
+            <th onclick="sortBy('name')">이름<span class="sort-icon">↕</span></th>
+            <th>연락처</th>
+            <th>운영 시스템</th>
+            <th>AI 솔루션</th>
+            <th>개발 앱</th>
+            <th onclick="sortBy('submitted_at')">제출일시<span class="sort-icon">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="8" class="no-data"><div class="icon">⏳</div>데이터 불러오는 중...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<!-- 상세 모달 -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeModal(event)">
+  <div class="modal" id="modalContent">
+    <h2 id="modalTitle">응답 상세</h2>
+    <div id="modalBody"></div>
+    <button class="modal-close" onclick="document.getElementById('modalBackdrop').classList.remove('open')">닫기</button>
+  </div>
+</div>
+
+<script>
+  let allData = [];
+  let sortKey = 'id';
+  let sortAsc = false;
+  let currentPage = 1;
+  const PAGE_SIZE = 20;
+
+  async function loadData() {
+    try {
+      const res = await fetch('/api/responses');
+      allData = await res.json();
+      updateStats();
+      renderTable();
+    } catch(e) {
+      document.getElementById('tableBody').innerHTML =
+        '<tr><td colspan="8" class="no-data"><div class="icon">⚠️</div>서버에 연결할 수 없습니다.</td></tr>';
+    }
+  }
+
+  function updateStats() {
+    document.getElementById('statTotal').textContent = allData.length;
+    document.getElementById('statChatGPT').textContent = allData.filter(r => r.ai_solutions?.includes('ChatGPT')).length;
+    document.getElementById('statClaude').textContent  = allData.filter(r => r.ai_solutions?.includes('Claude')).length;
+    document.getElementById('statGemini').textContent  = allData.filter(r => r.ai_solutions?.includes('Gemini')).length;
+    document.getElementById('statNone').textContent    = allData.filter(r => r.ai_solutions?.includes('미사용')).length;
+  }
+
+  function getFiltered() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const ai = document.getElementById('aiFilter').value;
+    return allData
+      .filter(r => {
+        const text = [r.company, r.name, r.phone].join(' ').toLowerCase();
+        return (!q || text.includes(q)) && (!ai || r.ai_solutions?.includes(ai));
+      })
+      .sort((a, b) => {
+        let va = a[sortKey] ?? '', vb = b[sortKey] ?? '';
+        if (typeof va === 'number') return sortAsc ? va - vb : vb - va;
+        return sortAsc ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+      });
+  }
+
+  function renderTable() {
+    const data = getFiltered();
+    const total = data.length;
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const slice = data.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+
+    const aiColors = { 'ChatGPT':'badge-green', 'Claude':'badge-blue', 'Gemini':'badge-purple', '미사용':'badge-gray', '기타':'badge-gray' };
+
+    const tbody = document.getElementById('tableBody');
+    if (!slice.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="no-data"><div class="icon">🔍</div>검색 결과가 없습니다.</td></tr>';
+    } else {
+      tbody.innerHTML = slice.map(r => {
+        const aiTags = (r.ai_solutions || '').split(', ').filter(Boolean)
+          .map(a => `<span class="badge ${aiColors[a]||'badge-gray'}">${a}</span>`).join('');
+        const date = r.submitted_at ? r.submitted_at.replace('T',' ').substring(0,16) : '-';
+        return `<tr onclick="openModal(${r.id})" style="cursor:pointer">
+          <td><span class="primary">${r.id}</span></td>
+          <td><span class="primary">${esc(r.company)}</span></td>
+          <td><span class="primary">${esc(r.name)}</span></td>
+          <td>${esc(r.phone)}</td>
+          <td class="cell-wrap"><p>${esc(r.system||'-')}</p></td>
+          <td>${aiTags||'<span style="color:#ccc">-</span>'}</td>
+          <td class="cell-wrap"><p>${esc(r.app_idea||'-')}</p></td>
+          <td style="white-space:nowrap;color:#888;font-size:13px">${date}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // 페이지네이션
+    const pg = document.getElementById('pagination');
+    if (totalPages <= 1) { pg.innerHTML=''; return; }
+    let btns = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+    for (let i=1; i<=totalPages; i++) {
+      if (i===1||i===totalPages||Math.abs(i-currentPage)<=2)
+        btns += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+      else if (Math.abs(i-currentPage)===3)
+        btns += `<span style="padding:0 4px;color:#ccc">…</span>`;
+    }
+    btns += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+    pg.innerHTML = btns;
+  }
+
+  function goPage(p) { currentPage = p; renderTable(); }
+
+  function sortBy(key) {
+    if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = true; }
+    document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted'));
+    renderTable();
+  }
+
+  function openModal(id) {
+    const r = allData.find(x => x.id === id);
+    if (!r) return;
+    const aiTags = (r.ai_solutions||'').split(', ').filter(Boolean)
+      .map(a=>`<span class="badge badge-blue">${a}</span>`).join(' ');
+    document.getElementById('modalTitle').textContent = `${r.name} (${r.company})`;
+    document.getElementById('modalBody').innerHTML = `
+      <div class="modal-row"><div class="mLabel">소속사</div><div class="mValue">${esc(r.company)}</div></div>
+      <div class="modal-row"><div class="mLabel">이름</div><div class="mValue">${esc(r.name)}</div></div>
+      <div class="modal-row"><div class="mLabel">연락처</div><div class="mValue">${esc(r.phone)}</div></div>
+      <div class="modal-row"><div class="mLabel">회사 운영 시스템</div><div class="mValue">${esc(r.system||'-')}</div></div>
+      <div class="modal-row"><div class="mLabel">AI 솔루션</div><div class="mValue">${aiTags||'-'}</div></div>
+      <div class="modal-row"><div class="mLabel">개발하고 싶은 앱</div><div class="mValue">${esc(r.app_idea||'-')}</div></div>
+      <div class="modal-row"><div class="mLabel">배우고 싶은 내용</div><div class="mValue">${esc(r.learning_goal||'-')}</div></div>
+      <div class="modal-row"><div class="mLabel">제출일시</div><div class="mValue">${r.submitted_at||'-'}</div></div>
+    `;
+    document.getElementById('modalBackdrop').classList.add('open');
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('modalBackdrop'))
+      document.getElementById('modalBackdrop').classList.remove('open');
+  }
+
+  function exportCSV() {
+    const data = getFiltered();
+    const headers = ['ID','소속사','이름','연락처','운영시스템','AI솔루션','개발앱','배우고싶은내용','제출일시'];
+    const rows = data.map(r => [
+      r.id, r.company, r.name, r.phone, r.system, r.ai_solutions, r.app_idea, r.learning_goal, r.submitted_at
+    ].map(v => `"${String(v||'').replace(/"/g,'""')}"`));
+    const csv = '\uFEFF' + [headers, ...rows].map(r=>r.join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    a.download = `survey_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  }
+
+  function esc(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  document.getElementById('searchInput').addEventListener('input', () => { currentPage=1; renderTable(); });
+  document.getElementById('aiFilter').addEventListener('change', () => { currentPage=1; renderTable(); });
+
+  loadData();
+</script>
+</body>
+</html>

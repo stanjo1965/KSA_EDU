@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>교육생 설문지</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 16px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      border-radius: 16px 16px 0 0;
+      padding: 36px 40px 28px;
+      border-top: 8px solid #667eea;
+    }
+
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: white;
+      margin-top: 12px;
+      border-radius: 12px;
+      padding: 28px 40px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .form-group {
+      margin-bottom: 28px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 10px;
+    }
+
+    label .required {
+      color: #667eea;
+      margin-left: 4px;
+    }
+
+    label .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: #667eea;
+      color: white;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 8px;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e8e8f0;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #333;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      background: #fafafa;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus,
+    input[type="tel"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+      background: white;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.6;
+    }
+
+    /* 체크박스 그룹 */
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .checkbox-item {
+      position: relative;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .checkbox-item label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border: 2px solid #e8e8f0;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: #555;
+      background: #fafafa;
+      transition: all 0.2s;
+      margin-bottom: 0;
+    }
+
+    .checkbox-item label:hover {
+      border-color: #667eea;
+      color: #667eea;
+    }
+
+    .checkbox-item input[type="checkbox"]:checked + label {
+      border-color: #667eea;
+      background: #667eea;
+      color: white;
+    }
+
+    .ai-icon {
+      font-size: 16px;
+    }
+
+    .divider {
+      height: 1px;
+      background: #f0f0f8;
+      margin: 24px 0;
+    }
+
+    /* 제출 버튼 */
+    .submit-card {
+      background: white;
+      margin-top: 12px;
+      border-radius: 12px;
+      padding: 28px 40px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+
+    .btn-submit {
+      display: inline-block;
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    /* 완료 메시지 */
+    .success-message {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .success-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    .success-message h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 10px;
+    }
+
+    .success-message p {
+      font-size: 15px;
+      color: #666;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      padding-bottom: 20px;
+    }
+
+    @media (max-width: 480px) {
+      .header, .card, .submit-card {
+        padding: 24px 20px;
+      }
+
+      .header h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 헤더 -->
+  <div class="header">
+    <h1>교육생 설문지</h1>
+    <p>교육 과정 맞춤화를 위한 기초 정보를 수집합니다.<br>모든 정보는 교육 목적으로만 활용됩니다.</p>
+  </div>
+
+  <!-- 설문 폼 -->
+  <form id="surveyForm">
+
+    <!-- Q1 ~ Q3: 기본 정보 -->
+    <div class="card">
+      <div class="form-group">
+        <label>
+          <span class="num">1</span>소속사
+          <span class="required">*</span>
+        </label>
+        <input type="text" name="company" placeholder="소속 회사명을 입력해 주세요" required>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-group">
+        <label>
+          <span class="num">2</span>이름
+          <span class="required">*</span>
+        </label>
+        <input type="text" name="name" placeholder="성함을 입력해 주세요" required>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-group">
+        <label>
+          <span class="num">3</span>연락처
+          <span class="required">*</span>
+        </label>
+        <input type="tel" name="phone" placeholder="010-0000-0000" required>
+      </div>
+    </div>
+
+    <!-- Q4: 회사 운영 시스템 -->
+    <div class="card">
+      <div class="form-group">
+        <label>
+          <span class="num">4</span>회사 운영 시스템
+        </label>
+        <textarea name="system" placeholder="현재 회사에서 사용 중인 운영 시스템을 입력해 주세요&#10;(예: ERP, CRM, 그룹웨어, 재고관리 시스템 등)"></textarea>
+      </div>
+    </div>
+
+    <!-- Q5: AI 솔루션 -->
+    <div class="card">
+      <div class="form-group">
+        <label>
+          <span class="num">5</span>사용 중인 AI 솔루션
+          <span style="font-size:13px; font-weight:400; color:#888; margin-left:6px;">(복수 선택 가능)</span>
+        </label>
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <input type="checkbox" id="ai_chatgpt" name="ai_solutions" value="ChatGPT">
+            <label for="ai_chatgpt">
+              <span class="ai-icon">🤖</span> ChatGPT
+            </label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="ai_claude" name="ai_solutions" value="Claude">
+            <label for="ai_claude">
+              <span class="ai-icon">✦</span> Claude
+            </label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="ai_gemini" name="ai_solutions" value="Gemini">
+            <label for="ai_gemini">
+              <span class="ai-icon">💎</span> Gemini
+            </label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="ai_etc" name="ai_solutions" value="기타">
+            <label for="ai_etc">
+              <span class="ai-icon">➕</span> 기타
+            </label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="ai_none" name="ai_solutions" value="미사용">
+            <label for="ai_none">
+              <span class="ai-icon">—</span> 미사용
+            </label>
+          </div>
+        </div>
+        <div id="ai_etc_input" style="display:none; margin-top:12px;">
+          <input type="text" name="ai_etc_text" placeholder="사용 중인 AI 솔루션명을 입력해 주세요">
+        </div>
+      </div>
+    </div>
+
+    <!-- Q6 ~ Q7: 교육 니즈 -->
+    <div class="card">
+      <div class="form-group">
+        <label>
+          <span class="num">6</span>개발하고 싶은 앱
+        </label>
+        <textarea name="app_idea" placeholder="만들고 싶은 앱이나 서비스를 자유롭게 적어 주세요&#10;(예: 재고 관리 앱, 고객 응대 챗봇, 업무 자동화 툴 등)"></textarea>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-group">
+        <label>
+          <span class="num">7</span>배우고 싶은 내용
+        </label>
+        <textarea name="learning_goal" placeholder="이번 교육에서 배우고 싶은 내용을 적어 주세요&#10;(예: AI 활용법, 앱 개발 기초, 업무 자동화, 데이터 분석 등)"></textarea>
+      </div>
+    </div>
+
+    <!-- 제출 -->
+    <div class="submit-card">
+      <div id="formContent">
+        <button type="submit" class="btn-submit">설문 제출하기</button>
+      </div>
+      <div class="success-message" id="successMsg">
+        <div class="success-icon">✅</div>
+        <h2>제출이 완료되었습니다!</h2>
+        <p>소중한 응답 감사합니다.<br>교육 과정에 잘 반영하겠습니다.</p>
+      </div>
+    </div>
+
+  </form>
+
+  <div class="footer-note">KSA 교육생 설문 · 2026</div>
+</div>
+
+<script>
+  // 기타 체크박스 선택 시 입력란 표시
+  document.getElementById('ai_etc').addEventListener('change', function() {
+    document.getElementById('ai_etc_input').style.display = this.checked ? 'block' : 'none';
+  });
+
+  // 폼 제출
+  document.getElementById('surveyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const name = this.querySelector('[name="name"]').value.trim();
+    const company = this.querySelector('[name="company"]').value.trim();
+    const phone = this.querySelector('[name="phone"]').value.trim();
+
+    if (!name || !company || !phone) {
+      alert('소속사, 이름, 연락처는 필수 항목입니다.');
+      return;
+    }
+
+    // 데이터 수집
+    const formData = new FormData(this);
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+      if (key === 'ai_solutions') {
+        data[key] = data[key] ? [].concat(data[key], value) : [value];
+      } else {
+        data[key] = value;
+      }
+    }
+
+    // 버튼 비활성화
+    const btn = document.querySelector('.btn-submit');
+    btn.disabled = true;
+    btn.textContent = '제출 중...';
+
+    try {
+      const res = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+
+      if (result.ok) {
+        document.getElementById('formContent').style.display = 'none';
+        document.getElementById('successMsg').style.display = 'block';
+        document.getElementById('successMsg').scrollIntoView({ behavior: 'smooth' });
+      } else {
+        alert('오류: ' + (result.error || '제출에 실패했습니다.'));
+        btn.disabled = false;
+        btn.textContent = '설문 제출하기';
+      }
+    } catch (err) {
+      alert('서버 연결에 실패했습니다. 서버가 실행 중인지 확인해 주세요.');
+      btn.disabled = false;
+      btn.textContent = '설문 제출하기';
+    }
+  });
+</script>
+
+</body>
+</html>
