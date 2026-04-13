@@ -5,6 +5,25 @@ import os
 app = Flask(__name__)
 DB_PATH = os.path.join(os.path.dirname(__file__), "survey.db")
 
+# gunicorn 포함 모든 실행 환경에서 테이블 자동 생성
+with app.app_context():
+    _conn = sqlite3.connect(DB_PATH)
+    _conn.execute("""
+        CREATE TABLE IF NOT EXISTS responses (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            company       TEXT NOT NULL,
+            name          TEXT NOT NULL,
+            phone         TEXT NOT NULL,
+            system        TEXT,
+            ai_solutions  TEXT,
+            app_idea      TEXT,
+            learning_goal TEXT,
+            submitted_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    _conn.commit()
+    _conn.close()
+
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
